@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# dig-weave
+#
+# only tested on Ubuntu
+#
+
+WEAVE_SUFFIX=${WEAVE_SUFFIX:-weave.local}
+WEAVE_HOST=${WEAVE_HOST:-}
+
+function usage() {
+    
+    MY_NAME=$(basename $0)
+    
+    echo "$MY_NAME [hostname] or WEAVE_HOST in your environment if set"
+    echo ""
+}
+
+if [ $# != 1 ]; then
+    if [ -z $WEAVE_HOST ]; then
+        usage
+        exit 1
+    fi
+else
+    WEAVE_HOST=$1
+fi
+
+# check for docker0
+
+ifconfig docker0 >/dev/null 2>&1
+
+if [ $? != 0 ]; then
+    echo "No docker0 bridge found, is weave launched"
+fi
+
+ADDRESS=$(ifconfig docker0 | grep "inet addr" | cut -d":" -f2 | awk '{print $1}')
+
+dig ${WEAVE_HOST}.${WEAVE_SUFFIX} @$ADDRESS
