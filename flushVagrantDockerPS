@@ -1,0 +1,14 @@
+#!/bin/bash
+
+VAGRANT=vagrant
+
+type -P "$VAGRANT" >/dev/null 2>&1 && echo "Clearing out Docker Processes" || { echo "curl not found, exiting"; exit 1; }
+
+HOSTS=$($VAGRANT status  | egrep "running\s\(" | awk '{print $1}')
+
+for i in $HOSTS
+do
+    echo "Clearing Docker Processes on $i"
+    $VAGRANT ssh $i -c "sudo docker kill \`sudo docker ps -q\`" 
+done
+
